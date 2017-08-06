@@ -102,28 +102,44 @@ class MyWindow(QMainWindow):
 
     def getdatatimer(self):
         if self.kiwoom.dataReceived == 1:
-            filename = '.\\data\\' + "20170804" + '_' + self.codelist[self.getdatacount] + '.csv'
-            if filename == self.prvFilename :
+            current_date = QDate.currentDate()            
+            filename = '..\\data\\' + current_date.toString("yyyyMMdd") + '_' + self.codelist[self.getdatacount] + '.csv'
+            
+            if filename == self.prvFilename :                                
                 with open(filename,'a') as sfile:
                     i=0
                     if self.kiwoom.dataunit != None :                    
                         while i<len(self.kiwoom.dataunit) :
                             for j in range(0,6):
-                                sfile.write(self.kiwoom.dataunit[i][j])
-                                if j != 5:
-                                    sfile.write(',')
+                                if j==2 : # 날짜인 경우
+                                    sfile.write("'"+self.kiwoom.dataunit[i][j]+"'")
+                                else :
+                                    sfile.write(self.kiwoom.dataunit[i][j])
+                                if j != 5:                                    
+                                    sfile.write(",")
                                 else:
                                     sfile.write('\n')
                             i=i+1                                    
                         self.kiwoom.dataReceived = 0                
             else:
+                if self.prvFilename != "" :
+                    time.sleep(12)
+                logfilename = 'lastest.txt'
+                with open(logfilename,'w') as logfile:
+                    logfile.write(self.prvFilename)
+                current_time = QTime.currentTime()
+                self.listWidget.insertItem(0,current_time.toString("hh:mm:ss") +" - "+ self.codelist[self.getdatacount] + " 조회 시작")
                 self.prvFilename = filename
                 with open(filename,'w') as sfile:
                     i=0
                     if self.kiwoom.dataunit != None :                    
                         while i<len(self.kiwoom.dataunit) :
                             for j in range(0,6):
-                                sfile.write(self.kiwoom.dataunit[i][j])
+                                if j==2 : # 날짜인 경우
+                                    sfile.write("'"+self.kiwoom.dataunit[i][j]+"'")
+                                else :
+                                    sfile.write(self.kiwoom.dataunit[i][j])
+
                                 if j != 5:
                                     sfile.write(',')
                                 else:
@@ -138,8 +154,8 @@ class MyWindow(QMainWindow):
 
                 if self.getdatacount < len(self.codelist) :
                     self.kiwoom.set_input_value("종목코드", self.codelist[self.getdatacount])
-                    self.kiwoom.set_input_value("시작일자", "20170804")
-                    self.kiwoom.set_input_value("종료일자", "20170804")
+                    self.kiwoom.set_input_value("시작일자", "20170805")
+                    self.kiwoom.set_input_value("종료일자", "20170805")
                     self.kiwoom.set_input_value("수정주가구분", 0)
                     if self.kiwoom.remained_data == True : 
                         self.kiwoom.comm_rq_data("주식분봉차트조회", "opt10080", 2, "1001")                        
@@ -163,7 +179,7 @@ class MyWindow(QMainWindow):
         self.getdataflag = 1
 
     def btn3_clicked(self):
-        files = glob.glob('.\\data\\*.csv')
+        files = glob.glob('..\\data\\*.csv')
         while len(files) > i:
             with open(files[i], 'r') as sfile:    #파일 순차적으로 열기
                 fileline = sfile.readlines()
